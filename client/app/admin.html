@@ -1,0 +1,364 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>cat</title>
+    <link rel="stylesheet" type="text/css" href="css/global.css" />
+    <link rel="stylesheet" type="text/css" href="css/admin.css" />
+</head>
+<body>
+<div class="main" id="chat">
+  <!-- left dom start -->
+  <div class="left">
+    <!-- user Informat start -->
+    <div class="left-inform">
+        <div class="title">
+          <span class="radius close-win" @click="closeWin"></span>
+          <span class="radius yellow min-win" @click="closeMin"></span>
+          <span class="radius green max-win" @click="closeMax"></span>
+        </div>
+        <div class="user" @click = "showUserInfo">
+            <img src="{{photo}}" />
+        </div>
+        <div class="nickname">{{nickname}}</div>
+        <div class="menu">
+          <div class="menu-item" v-bind:class="{active: showchat}" @click="showChat">
+            <span class="menu-radius iconfont icon-chat">&#xe605;</span>
+            <i class="redQ" v-if="newmsg"></i>
+            <p>消息</p>
+          </div>
+          <div class="menu-item" v-bind:class="{active: showgroup}" @click="showGroup">
+            <span class="menu-radius iconfont">&#xe624;</span>
+            <i class="redQ" v-if="new"></i>
+            <p>群组</p>
+          </div>
+          <div class="menu-item" v-bind:class="{active: showfriends}" @click="showFriends">
+            <span class="menu-radius iconfont">&#xe624;</span>
+            <i class="redQ" v-if="new"></i>
+            <p>好友</p>
+          </div>
+          <div class="menu-item add-search" @click="addSearch">
+            +
+          </div>
+        </div>
+        <div class="setup">
+          
+        </div>
+    </div>
+     <!-- user Informat end -->
+    <!-- user List start -->
+    <div class="left-list"  @contextmenu.prevent = "showAddList">
+        <div class="chat" v-if="chat">
+          <div class="search"><input id="username" type="text"  placeholder="Search" />
+          </div>
+              <div class="newFre">
+                <ul >
+                  <li class="item" v-for="item in newFrendList">  <!-- v-for="v-if="FshowAddF""-->
+                    <img v-bind:src="item.avatar" />
+                    <div>
+                      <p>用户ID：{{item.suid}}</br>想要添加你为好友</p>
+                      <div class="button">
+                        <button onclick="CHAT.addFriendsCon({{item.suid}},true)">接受</button>
+                        <button @click="clearF(item)">拒绝</button>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="addchoose" v-if="FshowAddF">
+                <select v-model="FselectedList">
+                  <option v-for="item in FteamList" v-bind:value="item.tid">{{item.tName}}</option>
+                </select>
+                <div class="button">
+                  <button @click = "addFriend">确定</button>
+                </div>
+              </div>
+              <div class="newFMsg">
+                <ul >
+                <li class="item {{item.light}}" v-for="item in userList" v-if="item.userid!=userid" @click="toggleSession(item)">
+                  <img v-bind:src="item.img | filterImg" />
+                  <div>
+                    <strong>{{item.username}}</strong>
+                    <span>{{item.endmeaage}}</span>
+                  </div>
+                  <span class="drag" v-if="item.unread">{{item.unread}}</span>
+                  <span class="close" @click="delUser(item)"></span>
+                </li>
+              </ul>
+              </div>
+   <!--        <div  class="user-list">
+            <ul >
+              <li class="item {{item.light}}" v-for="item in userList" v-if="item.userid!=userid" @click="toggleSession(item)">
+                <img v-bind:src="item.img | filterImg" />
+                <div>
+                  <strong>{{item.username}}</strong>
+                  <span>{{item.endmeaage}}</span>
+                </div>
+                <span class="drag" v-if="item.unread">{{item.unread}}</span>
+                <span class="close" @click="delUser(item)"></span>
+              </li>
+            </ul>
+          </div> -->
+        </div>
+        <div  class="group"  v-if="group">
+          <div class="group-tab">
+            <div v-bind:class="{active:isgroup}" @click="isGroup">群</div>
+            <div v-bind:class="{active:!isgroup}" @click="isMuc">讨论组</div>
+          </div>
+          <div class="group-box">
+            <div class="group-list" v-if="isgroup">
+              您暂时还没有添加任何群
+            </div>
+            <div class="muc-list" v-if="!isgroup">
+              您暂时还没有添加任何讨论组
+            </div>
+          </div>
+        </div>
+        <div class="friends" v-if="friends">
+          <div class="addlist" v-bind:class="{addliston:isAddList}">
+            <ul>
+              <li @click="addListText">新增</li>
+              <input type="text" v-model="teamname" class="addListText" v-bind:class="{addliston: isAddListText}">
+              <button class="confirm-addList"  v-bind:class="{addliston: isAddListText}" @click="addListConfirm">确认</button>
+              <li @click="closeAddList">取消</li>
+            </ul>
+          </div>
+          <div  class="user-list friends-list">
+            <ul>
+            
+              <li class="tlist" v-for="item in items"><p  @click = "showToggle(item)"><i class="sq" v-bind:class="{active: item.isSubShow}"></i>{{item.tName}}</p>
+                <ul v-show="item.isSubShow">
+              <li class="flist" v-for="data in item.data" @click="toggleSession(data)"> <!-- v-for="flist in frendsList" -->
+                <!-- <img v-bind:src="item.avatar | filterImg" /> -->
+                <img src="{{data.avatar}}">
+                <div>
+                  <strong>{{data.nickname}}</strong>
+                  <span>{{data.sign}}</span>
+                </div>
+              </li>
+            </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </div>
+    <!-- user List end -->
+    
+  </div>
+  <!-- left dom end -->
+
+  <!-- right dom start -->
+  <div class="right" v-show="!isChat">
+    <div class="center-chatImg">
+      <div class="img">
+        <img src="img/cat.png" />
+      </div>
+      <p>欢迎使用!</p>
+    </div>
+  </div>
+  <div class="right" v-show="isChat">
+    <!-- top dom start -->
+    <div class="title">
+      <span class="userPhoto"><img src="{{current.avatar}}" /></span>
+      <div class="userInform">
+        <strong>{{current.nickname}}</strong>
+        <span>{{current.sign}}</span>
+      </div>
+      <!-- <div class="operation">
+        <div class="sendfile" title="发送文件">
+            <input id="file" type="file"  multiple />
+        </div>
+        <span class="information" style="display:none"></span>
+      </div> -->
+    </div>
+    <!-- top dom end -->
+
+    <!-- content dom start -->
+    <div class="content">
+      <div id="message" class="message">
+        <div class="ms" v-for="item in chatmess">
+          <div class="mess-right" v-if="item.isLeft==1">
+            <span class="user-img"><img src='{{item.avatar}}'></span>
+            <!-- <div class="mess-time">{{item.pubtime}}</div> -->
+            <div class="mess-cont">{{item.content}}</div>
+          </div>
+          <div class="mess-left" v-if="item.isLeft==0">
+            <span class="user-img"><img src='{{item.avatar}}'></span>
+            <!-- <div class="mess-time">{{item.pubtime}}</div> -->
+            <div class="mess-cont">{{item.content}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- content dom end -->
+
+    <!-- bottom dom start -->
+    <div class="edit">
+      <div class="bar" unselectable="on" onmousedown="return false">
+        <span class="font J-EditItem" unselectable="on" onmousedown="return false"></span>
+        <span class="face J-EditItem" unselectable="on" onmousedown="return false"></span>
+        <span class="shake J-EditItem" unselectable="on"  id='s1'></span>
+        <span class="det J-EditItem" unselectable="on" onmousedown="return false"></span>
+        <span class="img J-EditItem" unselectable="on" onmousedown="return false"><input type="file" class="add-file" @change="handleFileChange" ref="inputer" /></span>
+        <span class="muc J-EditItem" unselectable="on" onmousedown="return false" @click="showMucBox">&#xe625;</span>
+        <span class="cut J-EditItem" unselectable="on" onmousedown="return false"></span>
+        <strong class="record fr">查看消息记录</strong>
+      </div>
+      <div id="textarea" class="textarea J-Edit" contenteditable="true" >
+      </div>
+    </div>
+    <!-- bottom dom end -->
+
+  </div>
+  <!-- right dom end -->
+  <!--addFriends-->
+<!--   <div class="addFrends">
+    <div class="result" v-if="uid">
+      <div class="userimg">
+        <img src="{{userimg}}">
+      </div>
+      <div class="userinfo">
+        <p class="uid">{{uid}}</p>
+        <p class="sign">{{usersign}}</p>
+        <p class="email">{{useremail}}</p>
+      </div>
+       <div class="button" v-if="uid">
+        <button @click = "showAdd">添加好友</button>
+      </div>
+    </div>
+    <div class="addchoose" v-if="showAddF">
+      <select v-model="selectedList">
+        <option v-for="item in teamList" v-bind:value="item.tid">{{item.tName}}</option>
+      </select>
+      <div class="button">
+        <button @click = "addFriend">确定</button>
+        <button @click = "addFriendHide">取消</button>
+      </div>
+    </div>
+  </div> -->
+  <!--addFriends dom end-->
+  <!-- add muc -->
+  <div class="mask" v-if="mask"></div>
+  <div class="muc-box" v-if="muc">
+    <div class="title">添加讨论组 <span class="fr">&#xe641;</span></div>
+    <div class="muc-cont">
+      <div>
+      </div>
+      <div>
+        
+      </div>
+    </div>
+  </div>
+  <!-- add muc -->
+  <!--add freinds-->
+  <div class="ADDF" style="height: 400px;width: 800px" v-if="showADDF">
+    <canvas id="canvas"  style="position: absolute;left: 0;top: 0;z-index: -1;width: 100%;height: 100%"></canvas>
+    <div class="ADDmain">
+      <div class="login-oper"><span class="login-close" @click="closeAdd">+</span></div>
+      <div class="hide" v-bind:class="">
+          <p>
+              <input class="username" type="text" placeholder="请输入账号" v-model="Auserid"  />
+              <span id="submit" class="submit" @click="Asearch"><i></i></span>
+          </p>
+          <p class="hint J-UserHint">{{Aloginhint}}</p>
+        </div>
+        <div class="result" v-if="Auid">
+          <div class="userimg">
+            <img src="{{Auserimg}}">
+          </div>
+          <div class="userinfo">
+            <p class="uid">{{Auid}}</p>
+            <p class="sign">{{Ausersign}}</p>
+            <p class="email">{{Auseremail}}</p>
+          </div>
+          <div class="button" v-if="Auid">
+            <button @click = "showAdd">添加好友</button>
+          </div>
+        </div>
+        <div class="addchoose" v-if="AshowAddF">
+          <select v-model="AselectedList">
+            <option v-for="item in AteamList" v-bind:value="item.tid">{{item.tName}}</option>
+          </select>
+          <div class="button">
+            <button onclick = "CHAT.addFriends({{Auid}},{{AselectedList}})">确定</button>
+            <button @click = "addFriendHide">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!--   add freinds dom end -->
+<!-- userinfo -->
+  <div class="userInfo" id="userInfo" v-if="showuserinfo">
+      <div class="photo">
+        <img src="{{photo}}" id="">
+        <span><input type="file" class="add-file" @change="handleFileChange2" ref="inputer" /></span>
+      </div>
+      <div class="info">
+        <p id="info_uid"><span>uid</span>{{info_uid}}</p>
+        <p  id="info_username"><span>账号</span>{{info_username}}</p>
+        <p id="info_sign"><span>个性签名</span><input type="text" v-model="info_sign"></p>
+        <p id="info_email"><span>邮箱</span><input type="text" v-model="info_email"></p>
+      </div>
+      <div class="button">
+        <button @click="">确定</button>
+        <button @click='closeUserInfo'>取消</button>
+      </div>
+  </div>
+<!-- userinfo dom end -->
+</div>
+  <script type="text/javascript" src="js/socket.io.js"></script>
+  <script type="text/javascript" src="http://static.runoob.com/assets/vue/1.0.11/vue.min.js"></script>
+  <script type="text/javascript" src="https://cdn.bootcss.com/vue-resource/1.3.4/vue-resource.js"></script>
+  <script type="text/javascript" src="js/config.js"></script>
+  <script type="text/javascript" src="js/chat.js"></script>
+  <script type="text/javascript" src="js/index.js"></script>
+  <script type="text/javascript">
+    var canvas = document.getElementById('canvas');  
+        var ctx = canvas.getContext('2d');  
+        canvas.width = canvas.parentNode.offsetWidth;  
+        canvas.height = canvas.parentNode.offsetHeight;
+        //如果浏览器支持requestAnimFrame则使用requestAnimFrame否则使用setTimeout  
+        window.requestAnimFrame = (function(){  
+        return  window.requestAnimationFrame       ||  
+                window.webkitRequestAnimationFrame ||  
+                window.mozRequestAnimationFrame    ||  
+                function( callback ){  
+                  window.setTimeout(callback, 1000 / 60);  
+                };  
+        })();  
+        // 波浪大小
+        var boHeight = canvas.height / 10;
+        var posHeight = canvas.height / 1.2;
+        //初始角度为0  
+        var step = 0;  
+        //定义三条不同波浪的颜色  
+        var lines = ["rgba(0,222,255, 0.2)",  
+                       "rgba(157,192,249, 0.2)",  
+                       "rgba(0,168,255, 0.2)"];  
+        function loop(){  
+            ctx.clearRect(0,0,canvas.width,canvas.height);  
+            step++;  
+            //画3个不同颜色的矩形  
+            for(var j = lines.length - 1; j >= 0; j--) {  
+                ctx.fillStyle = lines[j];  
+                //每个矩形的角度都不同，每个之间相差45度  
+                var angle = (step+j*50)*Math.PI/180;  
+                var deltaHeight   = Math.sin(angle) * boHeight;
+                var deltaHeightRight   = Math.cos(angle) * boHeight;  
+                ctx.beginPath();
+                ctx.moveTo(0, posHeight+deltaHeight);  
+                ctx.bezierCurveTo(canvas.width/2, posHeight+deltaHeight-boHeight, canvas.width / 2, posHeight+deltaHeightRight-boHeight, canvas.width, posHeight+deltaHeightRight);  
+                ctx.lineTo(canvas.width, canvas.height);  
+                ctx.lineTo(0, canvas.height);  
+                ctx.lineTo(0, posHeight+deltaHeight);  
+                ctx.closePath();  
+                ctx.fill();  
+            }
+            requestAnimFrame(loop);
+        }  
+        loop(); 
+  </script>
+</body>
+</html>

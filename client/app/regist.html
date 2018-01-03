@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>注册</title>
+	<style type="text/css">
+	body{
+		background-color: #CD5555;
+	}
+		.main-body{
+			width: 100%;
+			margin: 0 auto;
+		}
+		.main-body p{
+			width: 300px;
+			margin: 20px auto;
+		}
+		.main-body input{
+			width: 200px;
+			height: 30px;
+			line-height: 30px;
+			font-size: 16px;
+		}
+		.main-body .button{
+			height: 30px;
+			width: 80px;
+		}
+	</style>
+</head>
+<body>
+<div class="main-body" id="main-body">
+		<p class="id">账号： <input type="text" name="id"  v-model="username" v-on:blur="checkUser"><SPAN id=id_notice >{{username_notice}}</SPAN></</p>
+		<p class="password">密码： <input type="password"  v-model="password"><SPAN id=password_notice ></SPAN></</p>
+		<p class="name">昵称： <input type="text" v-model="nickname"><SPAN id=name_notice ></SPAN></</p>
+		<p class="email">邮箱： <input type="text" v-model="email"><SPAN id=email_notice ></SPAN></</p>
+		<p><input class="button sub" type="submit" name="sub" value="提交" @click="signup">
+		<button class="button">清空</button></p>
+		<button @click="close">关闭</button>
+</div>
+	<script type="text/javascript" src="http://static.runoob.com/assets/vue/1.0.11/vue.min.js"></script>
+  	<script type="text/javascript" src="https://cdn.bootcss.com/vue-resource/1.3.4/vue-resource.js"></script>
+  	<script type="text/javascript" src="js/config.js"></script>
+	<script type="text/javascript">
+	const ipcRenderer = require('electron').ipcRenderer;
+	new Vue({
+		el:'#main-body',
+		data:{
+			username:null,
+			password:null,
+			nickname:null,
+			email:null,
+			username_notice:null
+		},
+		methods:{
+			close(){
+				ipcRenderer.send('signup-close');
+			},
+			checkUser(){
+				let obj = {
+					username:this.username
+				}
+				this.$http.post(config.server + 'checkU', obj, {emulateJSON:true}).then(function(res){
+					console.log(res)
+					if(res.body.code == 1){
+						this.username_notice = null;
+					}else if(res.body.code == -1){
+						this.username_notice = '账号已存在';
+					}
+				})
+			},
+			signup(){
+				let obj = {
+					username: this.username,
+					password: this.password,
+					nickname: this.nickname,
+					email: this.email
+				}
+				this.$http.post(config.server + 'signup', obj, {emulateJSON:true}).then(function(res){
+					if(res.body.code == 1){
+						this.$http.post(config.server + 'createTable', obj,{emulateJSON:true}).then(function(res){
+							if(res.code == 1){
+								alert('注册成功');
+							}
+						});
+					}else{
+						alert('网络好像出了点问题也');
+					}
+				})
+			}
+		}
+	});
+		// var xmlhttp = false;
+		// try{
+		// 	xmlhttp = new ActiveXobject("Msxml2.XMLHTTP");
+		// }catch(e){
+		// 	try{
+		// 		xmlhttp = new ActiveXobject("Microsoft.XMLHTTP");
+		// 	}catch(e2){
+		// 		xmlhttp = false;
+		// 	}
+		// }
+		// if (!xmlhttp && typeof XMLHttpRequest != 'undefined'){
+		// 	xmlhttp = new XMLHttpRequest();
+		// }
+		// function Ajax(data){
+		// 	xmlhttp.open("POST","")
+		// }
+// 		function Ajax(data){
+// 			xmlhttp.open("GET","user_ck.js?username="+document.getElementById("username").value,true);
+// 			xmlhttp.send(null);
+// 			document.getElementById("username_notice").innerHTML = process_request; //显示状态
+// 			xmlhttp.onreadystatechange = function(){
+// 				if(xmlhttp.readyState==4){
+// 					if(xmlhttp.status==200){
+// 						var responseText = xmlhttp.responseText;
+// 						if(responseText=="true"){
+// 							ck_user("true");
+// 						}else{
+// 							ck_user("flase");
+// 						}
+// 					}else{
+// 						alert("发生错误！");
+// 					}
+// 				}
+// 			}
+// 		}
+// 		//ID检测
+// 		//email检测
+// 		function checkEmail(email){
+// 			if(checkemail(email.value)==false){
+// 				email.className = "FrameDivWarn";
+// 				showInfo("email_notice",msg_email_format);
+// 				change_submit("ture");
+// 			}else{
+// 				showInfo("email_notice",info_right);
+// 				email.className = "FrameDivPass";
+// 				change_submit(false);
+// 			}
+// 		}
+
+// 		function checkemail(temail){
+// 			var pattern = /^[\w]{1}[\w\.\-_]*@[\w]{1}[\w\-_\.]*\.[\w]{2,4}$/i;
+// 			if(pattern.test(temail)){
+// 				return true;
+// 			}else{
+// 				return false;
+// 			}
+// 		}
+
+// 		//按钮状态设置
+// 		function change_submit(zt){
+// 		     if (zt == "true")  
+// 		     {  
+// 		   document.forms['formUser'].elements['Submit1'].disabled = 'disabled';  
+// 		     }  
+// 		   else  
+// 		     {  
+// 		   document.forms['formUser'].elements['Submit1'].disabled = '';  
+// 		     }  
+// 		} 
+// 		//------公用程序------------------------------------//  
+//     function showInfo(target,Infos){  
+// 	    document.getElementById(target).innerHTML = Infos;  
+// 	    }  
+// 	    function showclass(target,Infos){  
+// 	    document.getElementById(target).className = Infos;  
+// 	    }     
+// 	var process_request = "<img src='loading.gif' width='16' height='16' border='0' align='absmiddle'>正在数据处理中...";  
+// 	var username_empty = "<span style='COLOR:#ff0000'>  × 用户名不能为空!</span>";  
+// 	var username_shorter = "<span style='COLOR:#ff0000'> × 用户名长度不能少于 3 个字符。</span>";  
+// 	var username_invalid = "- 用户名只能是由字母数字以及下划线组成。";  
+// 	var password_empty = "<span style='COLOR:#ff0000'> × 登录密码不能为空。</span>";  
+// 	var password_shorter_s = "<span style='COLOR:#ff0000'> × 登录密码不能少于 6 个字符。</span>";  
+// 	var password_shorter_m = "<span style='COLOR:#ff0000'> × 登录密码不能多于 30 个字符。</span>";  
+// 	var confirm_password_invalid = "<span style='COLOR:#ff0000'> × 两次输入密码不一致!</span>";  
+// 	var email_empty = "<span style='COLOR:#ff0000'> × Email 为空</span>";  
+// 	var email_invalid = "- Email 不是合法的地址";  
+// 	var agreement = "<span style='COLOR:#ff0000'> × 您没有接受协议</span>";  
+// 	var mobile_phone_invalid = "- 手机号码不是一个有效号码";  
+// 	var msg_un_blank = "<span style='COLOR:#ff0000'> × 用户名不能为空!</span>";  
+// 	var msg_un_length = "<span style='COLOR:#ff0000'> × 用户名最长不得超过15个字符</span>";  
+// 	var msg_un_format = "<span style='COLOR:#ff0000'> × 用户名含有非法字符!</span>";  
+// 	var msg_un_registered = "<span style='COLOR:#ff0000'> × 用户名已经存在,请重新输入!</span>";  
+// 	var msg_can_rg = "<span style='COLOR:#006600'> √ 可以注册！</span>";  
+// 	var msg_email_blank = "<span style='COLOR:#ff0000'> × 邮件地址不能为空!</span>";  
+// 	var msg_email_registered = " × 邮箱已存在,请重新输入!";  
+// 	var msg_email_format = "<span style='COLOR:#ff0000'> × 邮件地址不合法!</span>";  
+// 	var username_exist = "用户名 %s 已经存在";  
+// 	var info_can="<span style='COLOR:#006600'> √ 可以注册!</span>";  
+// 	var info_right="<span style='COLOR:#006600'> √ 填写正确!</span>";  
+	</script>
+</body>
+</html>
